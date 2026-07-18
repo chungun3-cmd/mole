@@ -60,3 +60,8 @@ body{
 }
 .site-footer a{color:#fff;}
 .site-footer .copy{margin-top:6px; opacity:.85;}
+
+.site-header nav a.lang-switch{
+  background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.7);
+  font-size:.85rem;
+}

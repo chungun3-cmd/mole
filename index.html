@@ -292,12 +292,13 @@
     animation:hammerSwing .27s ease-in forwards;
   }
   .hammer svg{width:100%; height:100%; display:block;
+    transform:rotate(46deg); /* 기본 기울기 — 애니메이션이 꺼진 기기에서도 유지 */
     filter:drop-shadow(0 3px 2px rgba(0,0,0,.25));}
   @keyframes hammerSwing{
-    0%{transform:rotate(-55deg) scale(.85); opacity:1;}
-    45%{transform:rotate(52deg) scale(1.1);}
-    70%{transform:rotate(42deg) scale(1);}
-    100%{transform:rotate(48deg); opacity:0;}
+    0%{transform:rotate(-100deg) scale(.85); opacity:1;}
+    45%{transform:rotate(6deg) scale(1.1);}
+    70%{transform:rotate(-4deg) scale(1);}
+    100%{transform:rotate(2deg); opacity:0;}
   }
   /* 맞는 순간 두더지 섬광 */
   .cell.hit .mole{animation:moleFlash .2s;}
@@ -325,8 +326,22 @@
   @media (prefers-reduced-motion: reduce){
     .mole{transition-duration:.01s;}
     .float-score,.star{animation-duration:.15s;}
-    .ring,.impact,.confetti,.praise{animation-duration:.12s;}
-    #comboVal.pop, .timebar.hurry, .board.shake, .lives .breaking, .cell.bounce, .hammer, .cell.hit .mole{animation:none;}
+    .ring,.impact,.confetti,.praise,.hammer{animation-duration:.14s;}
+    #comboVal.pop, .timebar.hurry, .board.shake, .lives .breaking, .cell.bounce, .cell.hit .mole{animation:none;}
+  }
+  /* 세로가 짧은 모바일 화면: 시작 버튼까지 한 화면에 들어오도록 압축 */
+  @media (max-height:780px){
+    .app{gap:8px; padding-top:max(6px, env(safe-area-inset-top));}
+    .logo{font-size:1.15rem;}
+    .chip{font-size:.85rem; padding:5px 11px;}
+    .hud{padding:6px 10px 8px;}
+    .hud .value{font-size:1.2rem;}
+    .board{padding:3.5vw 3.5vw 5vw; gap:3vw 2.5vw;}
+    .controls{gap:7px;}
+    .seg-btn{padding:6px 0; font-size:.92rem;}
+    .start-btn{padding:10px 0; font-size:1.25rem;}
+    .legend{font-size:.72rem; gap:10px;}
+    .game-footer{font-size:.7rem; padding:0;}
   }
 
   /* ── Bottom controls ─────────────── */
@@ -440,10 +455,10 @@
   </section>
 
   <footer class="game-footer">
-    <a href="/guide.html">공략 가이드</a> ·
-    <a href="/blog.html">블로그</a> ·
-    <a href="/about.html">소개</a> ·
-    <a href="/privacy.html">개인정보처리방침</a>
+    <a href="/guide.html" data-page="guide">공략 가이드</a> ·
+    <a href="/blog.html" data-page="blog">블로그</a> ·
+    <a href="/about.html" data-page="about">소개</a> ·
+    <a href="/privacy.html" data-page="privacy">개인정보처리방침</a>
   </footer>
 </div>
 
@@ -476,6 +491,7 @@ const I18N = {
         newrecord:"🎉 신기록!", avoid:"피하기!",
         fever:"🔥 피버 타임!", boss:"👑 보스 등장!", maxcombo:"최대 콤보",
         share:"자랑하기", copied:"✅ 링크 복사 완료!",
+        f_guide:"공략 가이드", f_blog:"블로그", f_about:"소개", f_privacy:"개인정보처리방침",
         shareMsg:"🐹 두더지팡팡 [{mode}·{diff}] {score}점 달성! 나보다 잘할 수 있어?" },
   en: { title:"Mole Tap!", score:"Score", combo:"Combo", best:"Best",
         easy:"Easy", normal:"Normal", hard:"Hard",
@@ -484,15 +500,28 @@ const I18N = {
         newrecord:"🎉 New Record!", avoid:"Avoid!",
         fever:"🔥 FEVER TIME!", boss:"👑 BOSS!", maxcombo:"Max Combo",
         share:"Share Score", copied:"✅ Link copied!",
+        f_guide:"Guide", f_blog:"Blog", f_about:"About", f_privacy:"Privacy Policy",
         shareMsg:"🐹 I scored {score} pts in Mole Tap! [{mode}·{diff}] Can you beat me?" }
 };
 let lang = localStorage.getItem("mole.lang") ||
            (navigator.language.startsWith("ko") ? "ko" : "en");
 const t = k => I18N[lang][k];
 
+const FOOTER_PAGES = {
+  guide:   ["/guide.html",   "/guide-en.html"],
+  blog:    ["/blog.html",    "/blog-en.html"],
+  about:   ["/about.html",   "/about-en.html"],
+  privacy: ["/privacy.html", "/privacy-en.html"]
+};
+
 function applyLang(){
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll(".game-footer a").forEach(a => {
+    const k = a.dataset.page;
+    a.href = FOOTER_PAGES[k][lang === "ko" ? 0 : 1];
+    a.textContent = t("f_" + k);
+  });
   langBtn.textContent = lang === "ko" ? "EN" : "한국어";
   document.title = lang === "ko" ? "두더지팡팡 · Whack-a-Mole" : "Mole Tap! · Whack-a-Mole";
 }
@@ -547,9 +576,12 @@ const SVGS = {
       <path d="M22 30 Q50 -2 78 30 L78 34 L22 34 Z" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3"/>
       <rect x="16" y="31" width="68" height="8" rx="4" fill="#E8A61F" stroke="#5E3A1E" stroke-width="3"/>
       <rect x="45" y="8" width="10" height="12" rx="3" fill="#E8A61F" stroke="#5E3A1E" stroke-width="2.5"/>
-     </g>`),
-  bomb: `
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+     </g>`)
+};
+
+/* ── 폭탄 3종 (랜덤 등장) ─────────── */
+const BOMB_SVGS = [
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <path d="M50 22 Q52 8 64 10" stroke="#5E3A1E" stroke-width="4" fill="none" stroke-linecap="round"/>
   <path d="M64 10 l4-5 M64 10 l6 1 M64 10 l1 6" stroke="#FF8A3D" stroke-width="3" stroke-linecap="round"/>
   <circle cx="50" cy="60" r="36" fill="#454045" stroke="#221F22" stroke-width="3"/>
@@ -564,13 +596,78 @@ const SVGS = {
     <path d="M34 52 l10 10 M44 52 l-10 10 M58 52 l10 10 M68 52 l-10 10" stroke="#FF5F3D" stroke-width="4" stroke-linecap="round"/>
   </g>
 </svg>`,
-  boss: bodySVG("#9B6BD4","#5B3690","#D8BCF7",
-    `<g>
-      <path d="M30 16 L36 3 L44 13 L50 0 L56 13 L64 3 L70 16 Z" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3" stroke-linejoin="round"/>
-      <circle cx="50" cy="7" r="2.5" fill="#E8503A"/>
-     </g>
-     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#5B3690" stroke-width="3.5" stroke-linecap="round"/>`)
-};
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M50 20 Q56 6 68 9" stroke="#5E3A1E" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M68 9 l5-4 M68 9 l6 2 M68 9 l0 6" stroke="#FFC93C" stroke-width="3" stroke-linecap="round"/>
+  <rect x="21" y="32" width="18" height="60" rx="8" fill="#C93A2E" stroke="#7A1F16" stroke-width="3"/>
+  <rect x="61" y="32" width="18" height="60" rx="8" fill="#C93A2E" stroke="#7A1F16" stroke-width="3"/>
+  <rect x="41" y="24" width="18" height="68" rx="8" fill="#E8503A" stroke="#7A1F16" stroke-width="3"/>
+  <rect x="19" y="48" width="62" height="9" fill="#F2C233" stroke="#7A1F16" stroke-width="2.5"/>
+  <rect x="19" y="74" width="62" height="9" fill="#F2C233" stroke="#7A1F16" stroke-width="2.5"/>
+  <g class="face-normal">
+    <path d="M40 34 l7 4 M60 34 l-7 4" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="45" cy="42" r="3" fill="#fff"/><circle cx="55" cy="42" r="3" fill="#fff"/>
+  </g>
+  <g class="face-hit">
+    <path d="M41 36 l7 7 M48 36 l-7 7 M52 36 l7 7 M59 36 l-7 7" stroke="#FFC93C" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+</svg>`,
+`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g stroke="#221F22" stroke-width="3" fill="#37343A">
+    <path d="M50 14 L45 28 L55 28 Z"/><path d="M50 98 L45 86 L55 86 Z"/>
+    <path d="M14 56 L28 51 L28 61 Z"/><path d="M86 56 L72 51 L72 61 Z"/>
+    <path d="M25 31 L36 38 L29 45 Z"/><path d="M75 31 L64 38 L71 45 Z"/>
+    <path d="M25 82 L36 74 L29 68 Z"/><path d="M75 82 L64 74 L71 68 Z"/>
+  </g>
+  <circle cx="50" cy="57" r="31" fill="#37343A" stroke="#221F22" stroke-width="3"/>
+  <circle cx="50" cy="30" r="6" fill="#FF4040" stroke="#221F22" stroke-width="2.5"/>
+  <circle cx="50" cy="30" r="10" fill="none" stroke="#FF4040" stroke-width="2" opacity=".45"/>
+  <ellipse cx="39" cy="46" rx="8" ry="6" fill="#5A565E" opacity=".7"/>
+  <g class="face-normal">
+    <path d="M34 49 l11 5 M66 49 l-11 5" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="42" cy="58" r="4" fill="#fff"/><circle cx="58" cy="58" r="4" fill="#fff"/>
+    <path d="M42 72 Q50 66 58 72" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  <g class="face-hit">
+    <path d="M36 52 l10 10 M46 52 l-10 10 M54 52 l10 10 M64 52 l-10 10" stroke="#FF5F3D" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>`
+];
+
+/* ── 보스 5종 (랜덤 등장) ─────────── */
+const BOSS_SVGS = [
+  /* 👑 보라 국왕 */
+  bodySVG("#9B6BD4","#5B3690","#D8BCF7",
+    `<path d="M30 16 L36 3 L44 13 L50 0 L56 13 L64 3 L70 16 Z" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3" stroke-linejoin="round"/>
+     <circle cx="50" cy="7" r="2.5" fill="#E8503A"/>
+     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#5B3690" stroke-width="3.5" stroke-linecap="round"/>`),
+  /* 😈 빨간 악마 */
+  bodySVG("#E8503A","#8F2418","#FFB3A1",
+    `<path d="M29 22 Q20 12 24 1 Q35 8 36 20 Z" fill="#8F2418" stroke="#5E1510" stroke-width="2.5"/>
+     <path d="M71 22 Q80 12 76 1 Q65 8 64 20 Z" fill="#8F2418" stroke="#5E1510" stroke-width="2.5"/>
+     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#8F2418" stroke-width="3.5" stroke-linecap="round"/>`),
+  /* ⚔️ 파랑 바이킹 */
+  bodySVG("#5B8FD4","#2F5A96","#BCD7F7",
+    `<path d="M20 30 Q8 22 12 8 Q26 14 27 28 Z" fill="#F4F0E6" stroke="#8A8272" stroke-width="2.5"/>
+     <path d="M80 30 Q92 22 88 8 Q74 14 73 28 Z" fill="#F4F0E6" stroke="#8A8272" stroke-width="2.5"/>
+     <path d="M25 31 Q50 4 75 31 L75 35 L25 35 Z" fill="#C8CDD6" stroke="#5A6272" stroke-width="3"/>
+     <rect x="46" y="10" width="8" height="24" fill="#A8AEBB" stroke="#5A6272" stroke-width="2"/>
+     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#2F5A96" stroke-width="3.5" stroke-linecap="round"/>`),
+  /* 🥷 초록 닌자 */
+  bodySVG("#5CBF4F","#2F7A28","#C4EBB6",
+    `<rect x="21" y="33" width="58" height="10" rx="5" fill="#33302B" stroke="#1C1A17" stroke-width="2.5"/>
+     <path d="M78 36 L92 28 L88 40 Z" fill="#33302B" stroke="#1C1A17" stroke-width="2.5"/>
+     <path d="M79 40 L93 44 L85 50 Z" fill="#33302B" stroke="#1C1A17" stroke-width="2.5"/>
+     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#2F7A28" stroke-width="3.5" stroke-linecap="round"/>`),
+  /* 🏴‍☠️ 주황 해적 */
+  bodySVG("#FF8A3D","#B35A18","#FFD9B3",
+    `<path d="M23 33 Q50 6 77 33 L77 39 L23 39 Z" fill="#B33A3A" stroke="#6E1F1F" stroke-width="3"/>
+     <path d="M77 34 L92 30 L88 42 L77 39 Z" fill="#B33A3A" stroke="#6E1F1F" stroke-width="2.5"/>
+     <circle cx="34" cy="24" r="2.2" fill="#fff"/><circle cx="48" cy="18" r="2.2" fill="#fff"/><circle cx="63" cy="22" r="2.2" fill="#fff"/>
+     <path d="M32 40 L86 34" stroke="#2B1B0E" stroke-width="3.5" stroke-linecap="round"/>
+     <circle cx="61" cy="48" r="8" fill="#2B1B0E" stroke="#1A100A" stroke-width="2"/>
+     <path d="M30 42 L44 46" stroke="#B35A18" stroke-width="3.5" stroke-linecap="round"/>`)
+];
 
 /* ── 뿅망치 SVG ───────────────────── */
 const HAMMER_SVG = `
@@ -761,7 +858,11 @@ function spawnLoop(){
 
 function setMole(c, type){
   c.type = type;
-  c.mole.innerHTML = SVGS[type === "helmet" ? "helmet" : type] || SVGS.normal;
+  let svg;
+  if (type === "boss")      svg = BOSS_SVGS[(Math.random() * BOSS_SVGS.length) | 0];
+  else if (type === "bomb") svg = BOMB_SVGS[(Math.random() * BOMB_SVGS.length) | 0];
+  else                      svg = SVGS[type] || SVGS.normal;
+  c.mole.innerHTML = svg;
   c.el.className = "cell type-" + type;
 }
 
@@ -809,6 +910,7 @@ function loseLife(){
 
 /* ── Fever ────────────────────────── */
 function startFever(){
+  if (mode === "survival") return; /* 서바이벌 모드에는 피버 없음 */
   fever = true;
   document.body.classList.add("fever");
   showEvent(t("fever"));
