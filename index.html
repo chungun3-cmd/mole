@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="두더지 잡기 — 황금·폭탄·보스 두더지와 피버 타임! 설치 없이 즐기는 무료 반응속도 게임 | Whack-a-Mole free browser game">
+<meta name="theme-color" content="#8ED04E">
+<title>두더지팡팡 · Whack-a-Mole</title>
+
+<!-- SEO -->
+<link rel="canonical" href="https://mole.dobal-e.com/">
+<meta name="keywords" content="두더지잡기, 두더지 게임, 무료게임, 모바일게임, whack a mole, mole game, free browser game">
+
+<!-- Open Graph (카톡/페북/디스코드 공유 카드) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mole.dobal-e.com/">
+<meta property="og:title" content="두더지팡팡 · Whack-a-Mole">
+<meta property="og:description" content="황금·폭탄·보스 두더지와 피버 타임! 설치 없이 바로 즐기는 무료 두더지 잡기 게임 🐹🔨">
+<meta property="og:image" content="https://mole.dobal-e.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:locale:alternate" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="두더지팡팡 · Whack-a-Mole">
+<meta name="twitter:description" content="황금·폭탄·보스 두더지와 피버 타임! 설치 없이 바로 즐기는 무료 두더지 잡기 게임 🐹🔨">
+<meta name="twitter:image" content="https://mole.dobal-e.com/og-image.png">
+
+<!-- PWA / 아이콘 -->
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-192.png">
+
+<!-- 구조화 데이터 -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "두더지팡팡 (Mole Tap!)",
+  "alternateName": "Whack-a-Mole",
+  "url": "https://mole.dobal-e.com/",
+  "description": "황금·폭탄·보스 두더지와 피버 타임이 있는 무료 브라우저 두더지 잡기 게임",
+  "genre": ["Casual", "Arcade"],
+  "gamePlatform": ["Web Browser", "Mobile"],
+  "inLanguage": ["ko", "en"],
+  "applicationCategory": "Game",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-top:#AEE3F6; --sky-bot:#D8F3E3;
+    --grass:#8ED04E; --grass-deep:#6DB53C;
+    --soil:#8A5A33; --soil-dark:#5E3A1E; --soil-lip:#A9713F;
+    --ink:#3A2A17; --paper:#FFFDF6;
+    --accent:#FF8A3D; --accent-deep:#E86F1F;
+    --gold:#FFC93C; --danger:#E8503A; --boss:#9B6BD4;
+    --hud-bg:rgba(255,253,246,.88);
+    --shadow:0 6px 0 rgba(58,42,23,.18);
+    --radius:20px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --sky-top:#1E2A4A; --sky-bot:#27403A;
+      --grass:#4E8A38; --grass-deep:#3C6E2B;
+      --soil:#6E4526; --soil-dark:#3F2612; --soil-lip:#8A5A33;
+      --ink:#F2E9D8; --paper:#2C2620;
+      --hud-bg:rgba(44,38,32,.88);
+      --shadow:0 6px 0 rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Jua', -apple-system, 'Apple SD Gothic Neo', sans-serif;
+    color:var(--ink);
+    background:linear-gradient(var(--sky-top) 0%, var(--sky-bot) 46%, var(--grass) 46.2%, var(--grass-deep) 100%);
+    background-attachment:fixed;
+    touch-action:manipulation;
+    user-select:none; -webkit-user-select:none;
+    display:flex; justify-content:center;
+    min-height:100dvh;
+  }
+  .app{
+    width:100%; max-width:460px;
+    padding:max(10px, env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom));
+    display:flex; flex-direction:column; gap:11px;
+  }
+
+  /* ── Top bar ─────────────────────── */
+  .topbar{display:flex; align-items:center; justify-content:space-between;}
+  .logo{font-size:clamp(1.25rem,5.6vw,1.6rem); letter-spacing:.02em; display:flex; align-items:center; gap:.32em;}
+  .logo .mole-emoji{font-size:1.15em; transform:translateY(2px);}
+  .top-btns{display:flex; gap:8px;}
+  .chip{
+    font-family:inherit; font-size:.95rem; color:var(--ink);
+    background:var(--hud-bg); border:2px solid var(--ink);
+    border-radius:999px; padding:6px 13px; cursor:pointer;
+    box-shadow:0 3px 0 rgba(58,42,23,.25);
+    transition:transform .08s;
+  }
+  .chip:active{transform:translateY(2px); box-shadow:none;}
+  .chip:focus-visible{outline:3px solid var(--accent); outline-offset:2px;}
+
+  /* ── HUD ─────────────────────────── */
+  .hud{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;
+    background:var(--hud-bg); border:2.5px solid var(--ink);
+    border-radius:var(--radius); padding:9px 12px 11px;
+    box-shadow:var(--shadow);
+    position:relative;
+  }
+  .hud .label{font-size:.76rem; opacity:.65; letter-spacing:.05em;}
+  .hud .value{font-size:1.45rem; line-height:1.1;}
+  .hud .cell-c{text-align:center;} .hud .cell-r{text-align:right;}
+  #comboVal{color:var(--accent-deep);}
+  #comboVal.pop{animation:pop .25s;}
+  @keyframes pop{40%{transform:scale(1.35);}}
+
+  .statusrow{grid-column:1 / -1; margin-top:2px; height:16px; display:flex; align-items:center;}
+  .timebar-wrap{
+    flex:1; height:12px;
+    background:rgba(58,42,23,.15); border-radius:999px; overflow:hidden;
+    border:1.5px solid var(--ink);
+  }
+  .timebar{height:100%; width:100%; background:linear-gradient(90deg,var(--gold),var(--accent)); border-radius:999px;}
+  .timebar.hurry{background:var(--danger); animation:blink .5s infinite;}
+  @keyframes blink{50%{opacity:.5;}}
+  .lives{flex:1; display:none; justify-content:center; gap:10px; font-size:1.05rem; line-height:1;}
+  body.mode-survival .timebar-wrap{display:none;}
+  body.mode-survival .lives{display:flex;}
+  .lives .lost{filter:grayscale(1); opacity:.35;}
+  .lives .breaking{animation:heartbreak .5s;}
+  @keyframes heartbreak{30%{transform:scale(1.5) rotate(-12deg);} 60%{transform:scale(.8) rotate(10deg);}}
+
+  /* fever banner */
+  .fever-banner{
+    position:absolute; left:50%; top:-14px; transform:translateX(-50%) scale(0);
+    background:linear-gradient(90deg,#FF5F6D,#FFC371);
+    color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.3);
+    border:2.5px solid var(--ink); border-radius:999px;
+    padding:4px 18px; font-size:1.05rem; z-index:10; white-space:nowrap;
+    transition:transform .25s cubic-bezier(.2,.9,.3,1.5);
+  }
+  body.fever .fever-banner{transform:translateX(-50%) scale(1);}
+  body.fever .hud{border-color:#FF5F6D; box-shadow:0 0 0 3px rgba(255,95,109,.4), var(--shadow);}
+  .event-banner{
+    position:absolute; left:50%; top:38%; transform:translate(-50%,-50%) scale(0);
+    background:var(--paper); border:3px solid var(--ink); border-radius:18px;
+    color:var(--ink); padding:10px 26px; font-size:1.4rem; z-index:40;
+    box-shadow:0 6px 0 rgba(0,0,0,.25); pointer-events:none; white-space:nowrap;
+  }
+  .event-banner.show{animation:eventIn 1.4s ease forwards;}
+  @keyframes eventIn{
+    12%{transform:translate(-50%,-50%) scale(1.05);}
+    22%{transform:translate(-50%,-50%) scale(1);}
+    80%{transform:translate(-50%,-50%) scale(1); opacity:1;}
+    100%{transform:translate(-50%,-50%) scale(.9); opacity:0;}
+  }
+
+  /* ── Board ───────────────────────── */
+  .board-wrap{position:relative;}
+  .board{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:4vw 3vw;
+    padding:5vw 4vw 6vw;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,.14) 0 8%, transparent 9%),
+      radial-gradient(circle at 78% 60%, rgba(255,255,255,.1) 0 6%, transparent 7%),
+      var(--grass);
+    border:3px solid var(--grass-deep);
+    border-radius:26px;
+    box-shadow:var(--shadow), inset 0 -8px 0 var(--grass-deep);
+  }
+  @media (min-width:460px){ .board{gap:20px 16px; padding:24px 20px 30px;} }
+  body.fever .board{box-shadow:0 0 0 4px rgba(255,95,109,.55), var(--shadow), inset 0 -8px 0 var(--grass-deep);}
+  .board.shake{animation:shake .35s;}
+  @keyframes shake{
+    20%{transform:translate(-6px,2px) rotate(-.6deg);}
+    45%{transform:translate(5px,-3px) rotate(.5deg);}
+    70%{transform:translate(-3px,2px);}
+  }
+
+  .cell{position:relative; aspect-ratio:1/0.92; cursor:pointer;}
+  .pit-back{
+    position:absolute; left:3%; right:3%; bottom:8%; height:36%;
+    background:var(--soil-dark); border-radius:50%;
+  }
+  .mole-window{
+    position:absolute; left:-4%; right:-4%; bottom:16%; top:-26%;
+    overflow:hidden; border-radius:0 0 45% 45%;
+    pointer-events:none; /* 커진 캐릭터가 옆칸 터치를 가로채지 않도록 */
+  }
+  .mole{
+    position:absolute; left:4%; right:4%; bottom:0; height:94%;
+    transform:translateY(108%);
+    transition:transform .12s cubic-bezier(.2,.9,.3,1.3);
+    will-change:transform;
+  }
+  .cell.up .mole{transform:translateY(6%);}
+  .cell.hit .mole{transform:translateY(28%) scaleY(.62) scaleX(1.18); transition-duration:.09s;}
+  .cell.type-boss .mole{left:-9%; right:-9%; height:108%;}
+  .cell.type-gold .mole{filter:drop-shadow(0 0 7px rgba(255,201,60,.9));}
+  .pit-front{
+    position:absolute; left:2%; right:2%; bottom:2%; height:26%;
+    background:radial-gradient(ellipse at 50% 20%, var(--soil-lip), var(--soil) 70%);
+    border-radius:50%;
+    box-shadow:inset 0 -5px 0 var(--soil-dark);
+  }
+  .mole svg{width:100%; height:100%; display:block; pointer-events:none;}
+  .mole .face-hit{display:none;}
+  .cell.hit .face-normal{display:none;}
+  .cell.hit .face-hit{display:block;}
+  .cell.nohelm .helm{display:none;}
+
+  /* boss HP pips */
+  .hp-pips{
+    position:absolute; left:50%; top:-16%; transform:translateX(-50%);
+    display:none; gap:3px; z-index:6;
+  }
+  .cell.type-boss.up .hp-pips{display:flex;}
+  .hp-pips i{
+    width:9px; height:9px; border-radius:50%;
+    background:var(--danger); border:1.5px solid var(--ink);
+  }
+  .hp-pips i.off{background:rgba(0,0,0,.2);}
+
+  /* floating score & particles */
+  .float-score{
+    position:absolute; left:50%; top:12%;
+    font-size:1.25rem; color:var(--paper);
+    text-shadow:0 2px 0 var(--ink); pointer-events:none; z-index:5;
+    animation:rise .7s ease-out forwards; white-space:nowrap;
+  }
+  .float-score.gold{color:var(--gold); font-size:1.45rem;}
+  .float-score.bad{color:var(--danger); font-size:1.35rem;}
+  @keyframes rise{from{transform:translate(-50%,0); opacity:1;} to{transform:translate(-50%,-46px); opacity:0;}}
+  .star{
+    position:absolute; font-size:1rem; pointer-events:none; z-index:4;
+    animation:burst .5s ease-out forwards;
+  }
+  @keyframes burst{
+    from{transform:translate(0,0) scale(1); opacity:1;}
+    to{transform:translate(var(--dx),var(--dy)) scale(.4); opacity:0;}
+  }
+  /* 충격파 링 */
+  .ring{
+    position:absolute; width:52px; height:52px; margin:-26px 0 0 -26px;
+    border:4px solid #fff; border-radius:50%;
+    pointer-events:none; z-index:4;
+    animation:ringOut .38s ease-out forwards;
+  }
+  .ring.gold{border-color:var(--gold); border-width:5px;}
+  .ring.boss{border-color:var(--boss);}
+  @keyframes ringOut{
+    from{transform:scale(.25); opacity:.95;}
+    to{transform:scale(1.9); opacity:0;}
+  }
+  /* 임팩트 팝 (💥 등) */
+  .impact{
+    position:absolute; margin:-16px 0 0 -16px; font-size:1.7rem;
+    pointer-events:none; z-index:6;
+    animation:impactPop .34s cubic-bezier(.2,.9,.3,1.4) forwards;
+  }
+  @keyframes impactPop{
+    0%{transform:scale(0) rotate(-20deg); opacity:1;}
+    55%{transform:scale(1.45) rotate(8deg); opacity:1;}
+    100%{transform:scale(.9) rotate(0deg); opacity:0;}
+  }
+  /* 컨페티 조각 */
+  .confetti{
+    position:absolute; width:8px; height:12px; border-radius:2px;
+    pointer-events:none; z-index:5;
+    animation:confFly .65s ease-out forwards;
+  }
+  @keyframes confFly{
+    from{transform:translate(0,0) rotate(0deg); opacity:1;}
+    to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)); opacity:0;}
+  }
+  /* 명중 순간 셀 전체가 살짝 튀는 바운스 */
+  .cell.bounce{animation:cellBounce .22s;}
+  @keyframes cellBounce{40%{transform:scale(1.06);}}
+  /* 탭 지점에 내리치는 뿅망치 */
+  .hammer{
+    position:absolute; width:74px; height:74px; margin:-62px 0 0 -40px;
+    transform-origin:50% 88%; pointer-events:none; z-index:7;
+    animation:hammerSwing .27s ease-in forwards;
+  }
+  .hammer svg{width:100%; height:100%; display:block;
+    filter:drop-shadow(0 3px 2px rgba(0,0,0,.25));}
+  @keyframes hammerSwing{
+    0%{transform:rotate(-55deg) scale(.85); opacity:1;}
+    45%{transform:rotate(52deg) scale(1.1);}
+    70%{transform:rotate(42deg) scale(1);}
+    100%{transform:rotate(48deg); opacity:0;}
+  }
+  /* 맞는 순간 두더지 섬광 */
+  .cell.hit .mole{animation:moleFlash .2s;}
+  @keyframes moleFlash{
+    from{filter:brightness(2.3) saturate(.4);}
+    to{filter:brightness(1);}
+  }
+  /* 콤보 칭찬 텍스트 (GOOD! GREAT! ...) */
+  .praise{
+    position:absolute; left:50%; top:18%;
+    transform:translateX(-50%);
+    font-size:1.9rem; letter-spacing:.04em;
+    color:var(--gold); -webkit-text-stroke:1.5px var(--ink);
+    text-shadow:0 3px 0 rgba(0,0,0,.25);
+    pointer-events:none; z-index:30; white-space:nowrap;
+    animation:praisePop .8s cubic-bezier(.2,.9,.3,1.4) forwards;
+  }
+  @keyframes praisePop{
+    0%{transform:translateX(-50%) scale(0) rotate(-6deg); opacity:0;}
+    18%{transform:translateX(-50%) scale(1.25) rotate(2deg); opacity:1;}
+    30%{transform:translateX(-50%) scale(1);}
+    75%{transform:translateX(-50%) translateY(-14px) scale(1); opacity:1;}
+    100%{transform:translateX(-50%) translateY(-30px) scale(.9); opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .mole{transition-duration:.01s;}
+    .float-score,.star{animation-duration:.15s;}
+    .ring,.impact,.confetti,.praise{animation-duration:.12s;}
+    #comboVal.pop, .timebar.hurry, .board.shake, .lives .breaking, .cell.bounce, .hammer, .cell.hit .mole{animation:none;}
+  }
+
+  /* ── Bottom controls ─────────────── */
+  .controls{display:flex; flex-direction:column; gap:10px;}
+  .seg{display:flex; gap:8px; justify-content:center;}
+  .seg-btn{
+    flex:1; max-width:150px; font-family:inherit; font-size:1rem; color:var(--ink);
+    background:var(--hud-bg); border:2.5px solid var(--ink); border-radius:14px;
+    padding:8px 0; cursor:pointer; box-shadow:0 3px 0 rgba(58,42,23,.25);
+  }
+  .seg-btn[aria-pressed="true"]{background:var(--gold); box-shadow:none; transform:translateY(2px);}
+  .seg-btn.mode[aria-pressed="true"]{background:var(--accent); color:#fff;}
+  .seg-btn:focus-visible{outline:3px solid var(--accent); outline-offset:2px;}
+  .diff-row .seg-btn{max-width:130px;}
+  .start-btn{
+    font-family:inherit; font-size:1.4rem; color:#fff;
+    background:linear-gradient(var(--accent), var(--accent-deep));
+    border:3px solid var(--ink); border-radius:var(--radius);
+    padding:13px 0; cursor:pointer; letter-spacing:.05em;
+    box-shadow:0 6px 0 var(--ink);
+    transition:transform .08s;
+  }
+  .start-btn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--ink);}
+  .start-btn:focus-visible{outline:3px solid var(--gold); outline-offset:3px;}
+  .legend{
+    display:flex; justify-content:center; gap:14px; flex-wrap:wrap;
+    font-size:.82rem; opacity:.85; text-align:center;
+  }
+  .legend span{display:inline-flex; align-items:center; gap:4px;}
+  .game-footer{
+    text-align:center; font-size:.78rem; opacity:.7;
+    padding:4px 0 2px; line-height:1.8;
+  }
+  .game-footer a{color:inherit;}
+
+  /* ── Overlay (game over) ─────────── */
+  .overlay{
+    position:fixed; inset:0; z-index:50;
+    background:rgba(30,20,10,.55); backdrop-filter:blur(3px);
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .overlay[hidden]{display:none;}
+  .panel{
+    width:100%; max-width:340px; text-align:center;
+    background:var(--paper); border:3px solid var(--ink);
+    border-radius:24px; padding:24px 22px;
+    box-shadow:0 8px 0 rgba(0,0,0,.3);
+    animation:panelIn .3s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes panelIn{from{transform:scale(.7); opacity:0;}}
+  .panel h2{font-size:1.55rem; margin-bottom:4px;}
+  .panel .modeline{font-size:.92rem; opacity:.65; margin-bottom:4px;}
+  .panel .final{font-size:3rem; color:var(--accent-deep); line-height:1.1;}
+  .panel .sub{font-size:1rem; opacity:.75; margin:8px 0 4px;}
+  .stats{display:flex; justify-content:center; gap:16px; font-size:.9rem; opacity:.8; margin-top:6px;}
+  .badge{
+    display:inline-block; background:var(--gold); border:2px solid var(--ink);
+    border-radius:999px; padding:4px 14px; font-size:1rem; margin-top:8px;
+    animation:pop .4s;
+  }
+  .panel .start-btn{width:100%; margin-top:16px; font-size:1.2rem;}
+  .panel .share-btn{
+    background:linear-gradient(#5CBF4F, #3F9A34);
+    margin-top:18px;
+  }
+  .panel .share-btn + .start-btn{margin-top:10px;}
+</style>
+</head>
+<body class="mode-classic">
+<div class="app">
+
+  <header class="topbar">
+    <h1 class="logo"><span class="mole-emoji">🐹</span><span data-i18n="title">두더지팡팡</span></h1>
+    <div class="top-btns">
+      <button class="chip" id="soundBtn" aria-label="sound">🔊</button>
+      <button class="chip" id="langBtn">EN</button>
+    </div>
+  </header>
+
+  <section class="hud" aria-live="off">
+    <div class="fever-banner">🔥 FEVER ×2</div>
+    <div><div class="label" data-i18n="score">점수</div><div class="value" id="scoreVal">0</div></div>
+    <div class="cell-c"><div class="label" data-i18n="combo">콤보</div><div class="value" id="comboVal">0</div></div>
+    <div class="cell-r"><div class="label" data-i18n="best">최고점수</div><div class="value" id="bestVal">0</div></div>
+    <div class="statusrow">
+      <div class="timebar-wrap"><div class="timebar" id="timebar"></div></div>
+      <div class="lives" id="lives"></div>
+    </div>
+  </section>
+
+  <div class="board-wrap">
+    <main class="board" id="board" aria-label="game board"></main>
+    <div class="event-banner" id="eventBanner"></div>
+  </div>
+
+  <section class="controls">
+    <div class="seg mode-row" role="group" aria-label="mode">
+      <button class="seg-btn mode" data-mode="classic" data-i18n="classic" aria-pressed="true">클래식</button>
+      <button class="seg-btn mode" data-mode="survival" data-i18n="survival">서바이벌</button>
+    </div>
+    <div class="seg diff-row" role="group" aria-label="difficulty">
+      <button class="seg-btn diff" data-diff="easy"   data-i18n="easy">쉬움</button>
+      <button class="seg-btn diff" data-diff="normal" data-i18n="normal" aria-pressed="true">보통</button>
+      <button class="seg-btn diff" data-diff="hard"   data-i18n="hard">어려움</button>
+    </div>
+    <button class="start-btn" id="startBtn" data-i18n="start">게임 시작!</button>
+    <p class="legend">
+      <span>🐹 +10</span><span>⭐ +50</span><span>⛑️ ×2 +30</span>
+      <span>💣 <b data-i18n="avoid">피하기!</b></span><span>👑 +100</span>
+    </p>
+  </section>
+
+  <footer class="game-footer">
+    <a href="/guide.html">공략 가이드</a> ·
+    <a href="/blog.html">블로그</a> ·
+    <a href="/about.html">소개</a> ·
+    <a href="/privacy.html">개인정보처리방침</a>
+  </footer>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="panel">
+    <h2 data-i18n="gameover">게임 종료!</h2>
+    <div class="modeline" id="modeline"></div>
+    <div class="final" id="finalScore">0</div>
+    <div class="sub"><span data-i18n="best">최고점수</span> · <span id="finalBest">0</span></div>
+    <div class="stats">
+      <span>🎯 <span id="statHits">0</span></span>
+      <span>🔥 <span data-i18n="maxcombo">최대 콤보</span> <span id="statCombo">0</span></span>
+    </div>
+    <div class="badge" id="recordBadge" hidden data-i18n="newrecord">🎉 신기록!</div>
+    <button class="start-btn share-btn" id="shareBtn">📣 <span data-i18n="share">자랑하기</span></button>
+    <button class="start-btn" id="retryBtn" data-i18n="retry">다시 하기</button>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ── i18n ─────────────────────────── */
+const I18N = {
+  ko: { title:"두더지팡팡", score:"점수", combo:"콤보", best:"최고점수",
+        easy:"쉬움", normal:"보통", hard:"어려움",
+        classic:"클래식", survival:"서바이벌",
+        start:"게임 시작!", retry:"다시 하기", gameover:"게임 종료!",
+        newrecord:"🎉 신기록!", avoid:"피하기!",
+        fever:"🔥 피버 타임!", boss:"👑 보스 등장!", maxcombo:"최대 콤보",
+        share:"자랑하기", copied:"✅ 링크 복사 완료!",
+        shareMsg:"🐹 두더지팡팡 [{mode}·{diff}] {score}점 달성! 나보다 잘할 수 있어?" },
+  en: { title:"Mole Tap!", score:"Score", combo:"Combo", best:"Best",
+        easy:"Easy", normal:"Normal", hard:"Hard",
+        classic:"Classic", survival:"Survival",
+        start:"Start Game!", retry:"Play Again", gameover:"Game Over!",
+        newrecord:"🎉 New Record!", avoid:"Avoid!",
+        fever:"🔥 FEVER TIME!", boss:"👑 BOSS!", maxcombo:"Max Combo",
+        share:"Share Score", copied:"✅ Link copied!",
+        shareMsg:"🐹 I scored {score} pts in Mole Tap! [{mode}·{diff}] Can you beat me?" }
+};
+let lang = localStorage.getItem("mole.lang") ||
+           (navigator.language.startsWith("ko") ? "ko" : "en");
+const t = k => I18N[lang][k];
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  langBtn.textContent = lang === "ko" ? "EN" : "한국어";
+  document.title = lang === "ko" ? "두더지팡팡 · Whack-a-Mole" : "Mole Tap! · Whack-a-Mole";
+}
+
+/* ── Elements ─────────────────────── */
+const $ = id => document.getElementById(id);
+const board = $("board"), scoreVal = $("scoreVal"), comboVal = $("comboVal"),
+  bestVal = $("bestVal"), timebar = $("timebar"), livesEl = $("lives"),
+  startBtn = $("startBtn"), retryBtn = $("retryBtn"), overlay = $("overlay"),
+  finalScore = $("finalScore"), finalBest = $("finalBest"), recordBadge = $("recordBadge"),
+  modeline = $("modeline"), statHits = $("statHits"), statCombo = $("statCombo"),
+  eventBanner = $("eventBanner"), langBtn = $("langBtn"), soundBtn = $("soundBtn");
+
+/* ── Mole SVGs ────────────────────── */
+function bodySVG(body, stroke, belly, extra=""){
+  return `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <ellipse cx="50" cy="62" rx="34" ry="38" fill="${body}" stroke="${stroke}" stroke-width="3"/>
+  <ellipse cx="50" cy="72" rx="20" ry="22" fill="${belly}"/>
+  <circle cx="24" cy="30" r="8" fill="${body}" stroke="${stroke}" stroke-width="3"/>
+  <circle cx="76" cy="30" r="8" fill="${body}" stroke="${stroke}" stroke-width="3"/>
+  <circle cx="24" cy="30" r="3.5" fill="${belly}"/>
+  <circle cx="76" cy="30" r="3.5" fill="${belly}"/>
+  <g class="face-normal">
+    <circle cx="39" cy="48" r="4.5" fill="#2B1B0E"/>
+    <circle cx="61" cy="48" r="4.5" fill="#2B1B0E"/>
+    <circle cx="40.5" cy="46.5" r="1.5" fill="#fff"/>
+    <circle cx="62.5" cy="46.5" r="1.5" fill="#fff"/>
+    <path d="M44 62 Q50 67 56 62" stroke="${stroke}" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  <g class="face-hit">
+    <path d="M35 44 l8 8 M43 44 l-8 8" stroke="#2B1B0E" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M57 44 l8 8 M65 44 l-8 8" stroke="#2B1B0E" stroke-width="3.5" stroke-linecap="round"/>
+    <ellipse cx="50" cy="64" rx="5" ry="6.5" fill="#2B1B0E"/>
+  </g>
+  <ellipse cx="50" cy="56" rx="6.5" ry="5" fill="#F2907B" stroke="${stroke}" stroke-width="2.5"/>
+  <g stroke="${stroke}" stroke-width="1.8" stroke-linecap="round">
+    <path d="M30 55 L14 51"/><path d="M30 59 L14 61"/>
+    <path d="M70 55 L86 51"/><path d="M70 59 L86 61"/>
+  </g>
+  <ellipse cx="32" cy="88" rx="9" ry="6" fill="${belly}" stroke="${stroke}" stroke-width="2.5"/>
+  <ellipse cx="68" cy="88" rx="9" ry="6" fill="${belly}" stroke="${stroke}" stroke-width="2.5"/>
+  ${extra}
+</svg>`;
+}
+const SVGS = {
+  normal: bodySVG("#8A5A33","#5E3A1E","#C79A6B"),
+  gold: bodySVG("#F2C233","#A67C1B","#FFE9A8",
+    `<path d="M50 76 l3 6 6.6 .8 -4.8 4.6 1.2 6.6 -6-3.2 -6 3.2 1.2-6.6 -4.8-4.6 6.6-.8z" fill="#fff" opacity=".85"/>`),
+  helmet: bodySVG("#8A5A33","#5E3A1E","#C79A6B",
+    `<g class="helm">
+      <path d="M22 30 Q50 -2 78 30 L78 34 L22 34 Z" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3"/>
+      <rect x="16" y="31" width="68" height="8" rx="4" fill="#E8A61F" stroke="#5E3A1E" stroke-width="3"/>
+      <rect x="45" y="8" width="10" height="12" rx="3" fill="#E8A61F" stroke="#5E3A1E" stroke-width="2.5"/>
+     </g>`),
+  bomb: `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <path d="M50 22 Q52 8 64 10" stroke="#5E3A1E" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M64 10 l4-5 M64 10 l6 1 M64 10 l1 6" stroke="#FF8A3D" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="50" cy="60" r="36" fill="#454045" stroke="#221F22" stroke-width="3"/>
+  <ellipse cx="38" cy="46" rx="10" ry="7" fill="#6B646B" opacity=".7"/>
+  <g class="face-normal">
+    <path d="M32 50 l12 6 M76 44 l-12 8" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="40" cy="60" r="4" fill="#fff"/>
+    <circle cx="62" cy="60" r="4" fill="#fff"/>
+    <path d="M42 76 Q51 70 60 76" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  <g class="face-hit">
+    <path d="M34 52 l10 10 M44 52 l-10 10 M58 52 l10 10 M68 52 l-10 10" stroke="#FF5F3D" stroke-width="4" stroke-linecap="round"/>
+  </g>
+</svg>`,
+  boss: bodySVG("#9B6BD4","#5B3690","#D8BCF7",
+    `<g>
+      <path d="M30 16 L36 3 L44 13 L50 0 L56 13 L64 3 L70 16 Z" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="50" cy="7" r="2.5" fill="#E8503A"/>
+     </g>
+     <path d="M30 42 L44 46 M70 42 L56 46" stroke="#5B3690" stroke-width="3.5" stroke-linecap="round"/>`)
+};
+
+/* ── 뿅망치 SVG ───────────────────── */
+const HAMMER_SVG = `
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs><clipPath id="hammerHead"><rect x="12" y="8" width="76" height="36" rx="18"/></clipPath></defs>
+  <rect x="44" y="40" width="12" height="54" rx="6" fill="#F2C233" stroke="#5E3A1E" stroke-width="3.5"/>
+  <rect x="42" y="86" width="16" height="10" rx="5" fill="#E8503A" stroke="#5E3A1E" stroke-width="3"/>
+  <rect x="12" y="8" width="76" height="36" rx="18" fill="#E8503A"/>
+  <g clip-path="url(#hammerHead)" stroke="#FFC93C" stroke-width="9" fill="none">
+    <path d="M30 4 q10 22 0 44"/>
+    <path d="M52 4 q10 22 0 44"/>
+    <path d="M74 4 q10 22 0 44"/>
+  </g>
+  <rect x="12" y="8" width="76" height="36" rx="18" fill="none" stroke="#5E3A1E" stroke-width="3.5"/>
+  <ellipse cx="15" cy="26" rx="7" ry="18" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3"/>
+  <ellipse cx="85" cy="26" rx="7" ry="18" fill="#FFC93C" stroke="#5E3A1E" stroke-width="3"/>
+  <ellipse cx="34" cy="16" rx="9" ry="4" fill="#fff" opacity=".4" transform="rotate(-8 34 16)"/>
+</svg>`;
+
+/* build 3x3 board */
+const CELLS = 9;
+const cells = [];
+for (let i = 0; i < CELLS; i++){
+  const c = document.createElement("div");
+  c.className = "cell";
+  c.dataset.idx = i;
+  c.innerHTML = `
+    <div class="pit-back"></div>
+    <div class="hp-pips">${"<i></i>".repeat(5)}</div>
+    <div class="mole-window"><div class="mole">${SVGS.normal}</div></div>
+    <div class="pit-front"></div>`;
+  board.appendChild(c);
+  cells.push({ el:c, mole:c.querySelector(".mole"), pips:c.querySelectorAll(".hp-pips i"),
+               up:false, dead:false, type:"normal", hp:1, hideTimer:0 });
+}
+
+/* ── Mode & Difficulty ────────────── */
+const DIFFS = {
+  easy:   { spawn:[1000, 640], up:[1150, 780] },
+  normal: { spawn:[ 820, 470], up:[ 950, 580] },
+  hard:   { spawn:[ 650, 360], up:[ 740, 440] }
+};
+let diff = localStorage.getItem("mole.diff") || "normal";
+let mode = localStorage.getItem("mole.mode") || "classic";
+
+/* ── Sound (Web Audio, no assets) ─── */
+let soundOn = localStorage.getItem("mole.sound") !== "0";
+let actx = null;
+function beep(freq, dur, type="square", vol=.15, slide=0){
+  if (!soundOn) return;
+  try{
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === "suspended") actx.resume();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, actx.currentTime + dur);
+    g.gain.setValueAtTime(vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+const sfx = {
+  hit(){ /* 뿅! — 빠르게 튀어오르는 소리 */
+    beep(420,.13,"sine",.24,1500);
+    beep(840,.09,"triangle",.08,2000);
+  },
+  gold(){ beep(880,.1,"square",.16); setTimeout(()=>beep(1320,.14,"square",.14),80); },
+  clang(){ beep(1200,.08,"triangle",.2,700); },
+  boom(){ beep(90,.4,"sawtooth",.25,40); },
+  bossHit(){ beep(300,.1,"sawtooth",.18,180); },
+  bossDown(){ beep(392,.1); setTimeout(()=>beep(523,.1),90); setTimeout(()=>beep(659,.1),180); setTimeout(()=>beep(784,.25),270); },
+  bossEnter(){ /* 웅장한 "둥- 둥- 두둥!" 등장음 */
+    beep(110,.28,"sawtooth",.22,80);
+    setTimeout(()=>beep(110,.28,"sawtooth",.22,80),320);
+    setTimeout(()=>beep(65,.55,"sawtooth",.26,50),640);
+    setTimeout(()=>beep(220,.4,"triangle",.14,440),660);
+  },
+  fever(){ beep(659,.09); setTimeout(()=>beep(784,.09),90); setTimeout(()=>beep(988,.16),180); },
+  life(){ beep(200,.25,"sine",.2,120); },
+  miss(){ beep(140,.15,"sine",.12,90); },
+  tick(){ beep(880,.06,"sine",.08); },
+  start(){ /* 경쾌한 상승 팡파레 */
+    beep(523,.09,"square",.16);
+    setTimeout(()=>beep(659,.09,"square",.16),90);
+    setTimeout(()=>beep(784,.09,"square",.16),180);
+    setTimeout(()=>beep(1047,.22,"square",.18),270);
+  },
+  end(){ beep(392,.12); setTimeout(()=>beep(494,.12),120); setTimeout(()=>beep(587,.2),240); }
+};
+
+/* ── 피버 배경음 (5초 루프) ───────── */
+let feverBgmTimer = 0, feverBgmStep = 0;
+const FEVER_MELODY = [659, 784, 988, 784, 1047, 988, 784, 659]; /* E5-G5-B5 아르페지오 */
+function startFeverBgm(){
+  stopFeverBgm();
+  feverBgmStep = 0;
+  feverBgmTimer = setInterval(() => {
+    beep(FEVER_MELODY[feverBgmStep % FEVER_MELODY.length], .11, "square", .09);
+    if (feverBgmStep % 2 === 0) beep(165, .12, "triangle", .1); /* 베이스 펄스 */
+    feverBgmStep++;
+  }, 140);
+}
+function stopFeverBgm(){
+  clearInterval(feverBgmTimer);
+  feverBgmTimer = 0;
+}
+
+/* ── 일반 배경음 (잔잔한 루프) ────── */
+let gameBgmTimer = 0, gameBgmStep = 0;
+/* C 펜타토닉 기반, 0은 쉼표 — 느긋하고 부드러운 톤 */
+const GAME_MELODY = [523,0,659,0,784,0,659,0, 587,0,698,0,880,0,784,0];
+function startGameBgm(){
+  stopGameBgm();
+  gameBgmStep = 0;
+  gameBgmTimer = setInterval(() => {
+    const n = GAME_MELODY[gameBgmStep % GAME_MELODY.length];
+    if (n) beep(n, .3, "triangle", .05);              /* 부드러운 멜로디 */
+    if (gameBgmStep % 4 === 0) beep(131, .34, "sine", .055); /* 낮은 베이스 */
+    gameBgmStep++;
+  }, 330);
+}
+function stopGameBgm(){
+  clearInterval(gameBgmTimer);
+  gameBgmTimer = 0;
+}
+function buzz(p){ if (navigator.vibrate) navigator.vibrate(p); }
+
+/* ── Game state ───────────────────── */
+const GAME_SEC = 30, MAX_LIVES = 3, FEVER_MS = 5000;
+let playing=false, score=0, combo=0, maxCombo=0, hits=0, lives=MAX_LIVES;
+let timeLeft=0, spawnTimer=0, tickTimer=0;
+let fever=false, feverTimer=0, bossSpawned=false, nextBossAt=30, survStart=0;
+
+const bestKey = () => `mole.best.${mode}.${diff}`;
+const getBest = () => +(localStorage.getItem(bestKey()) || 0);
+
+const lerp = (a,b,t) => a + (b-a)*t;
+/* 진행도: 클래식은 남은 시간, 서바이벌은 경과 시간 기준(90초에 최고 속도) */
+function progress(){
+  return mode === "classic"
+    ? 1 - timeLeft / GAME_SEC
+    : Math.min(1, (Date.now() - survStart) / 90000);
+}
+function multiplier(){ return 1 + Math.min(3, Math.floor(combo/5)); } // x1~x4
+
+function updateHUD(){
+  scoreVal.textContent = score;
+  comboVal.textContent = combo;
+  bestVal.textContent = getBest();
+}
+function renderLives(){
+  livesEl.innerHTML = "";
+  for (let i = 0; i < MAX_LIVES; i++){
+    const s = document.createElement("span");
+    s.textContent = "❤️";
+    if (i >= lives) s.className = "lost";
+    livesEl.appendChild(s);
+  }
+}
+
+/* ── Type picker ──────────────────── */
+function pickType(){
+  const p = progress();
+  const r = Math.random();
+  let gold = .08,
+      bomb = fever ? 0 : (p < .1 ? 0 : .13),
+      helm = p < .2 ? 0 : .12;
+  if (r < gold) return "gold";
+  if (r < gold + bomb) return "bomb";
+  if (r < gold + bomb + helm) return "helmet";
+  return "normal";
+}
+
+/* ── Spawner ──────────────────────── */
+function spawnLoop(){
+  if (!playing) return;
+  const d = DIFFS[diff], p = progress();
+  const free = cells.filter(c => !c.up);
+  if (free.length){
+    const c = free[(Math.random()*free.length)|0];
+    popUp(c, pickType());
+  }
+  let iv = lerp(d.spawn[0], d.spawn[1], p);
+  if (fever) iv *= .5;
+  spawnTimer = setTimeout(spawnLoop, iv);
+}
+
+function setMole(c, type){
+  c.type = type;
+  c.mole.innerHTML = SVGS[type === "helmet" ? "helmet" : type] || SVGS.normal;
+  c.el.className = "cell type-" + type;
+}
+
+function popUp(c, type){
+  const d = DIFFS[diff], p = progress();
+  setMole(c, type);
+  c.up = true; c.dead = false;
+  c.hp = type === "boss" ? 5 : (type === "helmet" ? 2 : 1);
+  if (type === "boss") c.pips.forEach(i => i.classList.remove("off"));
+  c.el.classList.add("up");
+  let upMs = lerp(d.up[0], d.up[1], p);
+  if (type === "gold") upMs *= .55;
+  if (type === "helmet") upMs *= 1.35;
+  if (type === "bomb") upMs *= 1.1;
+  if (type === "boss") upMs = 6000;
+  c.hideTimer = setTimeout(() => hide(c, true), upMs);
+}
+
+function hide(c, escaped){
+  clearTimeout(c.hideTimer);
+  const wasType = c.type, wasDead = c.dead;
+  c.up = false;
+  c.el.classList.remove("up");
+  setTimeout(() => { c.el.classList.remove("hit","nohelm"); }, 130);
+
+  if (escaped && playing && !wasDead){
+    /* 폭탄·보스는 놓쳐도 무벌점, 나머지는 콤보 초기화 / 서바이벌은 목숨 차감 */
+    if (wasType !== "bomb" && wasType !== "boss"){
+      if (mode === "survival") loseLife();
+      else if (combo > 0){ combo = 0; updateHUD(); }
+    }
+  }
+}
+
+function loseLife(){
+  if (!playing) return;
+  lives--; combo = 0;
+  sfx.life(); buzz(120);
+  renderLives();
+  const hearts = livesEl.children[Math.max(0, lives)];
+  if (hearts){ hearts.classList.add("breaking"); }
+  updateHUD();
+  if (lives <= 0) end();
+}
+
+/* ── Fever ────────────────────────── */
+function startFever(){
+  fever = true;
+  document.body.classList.add("fever");
+  showEvent(t("fever"));
+  sfx.fever(); buzz([40,40,40]);
+  stopGameBgm();      /* 잔잔한 배경음 잠시 멈추고 */
+  startFeverBgm();    /* 피버 배경음으로 전환 */
+  clearTimeout(feverTimer);
+  feverTimer = setTimeout(() => {
+    fever = false;
+    document.body.classList.remove("fever");
+    stopFeverBgm();
+    if (playing) startGameBgm(); /* 피버 끝나면 일반 배경음 복귀 */
+  }, FEVER_MS);
+}
+
+/* ── Boss ─────────────────────────── */
+function spawnBoss(){
+  const free = cells.filter(c => !c.up);
+  if (!free.length) return;
+  showEvent(t("boss"));
+  sfx.bossEnter(); buzz([120,60,120,60,200]);
+  const c = free[(Math.random()*free.length)|0];
+  popUp(c, "boss");
+}
+
+function showEvent(text){
+  eventBanner.textContent = text;
+  eventBanner.classList.remove("show");
+  void eventBanner.offsetWidth;
+  eventBanner.classList.add("show");
+}
+
+/* ── Input ────────────────────────── */
+board.addEventListener("pointerdown", e => {
+  if (!playing) return;
+  const cellEl = e.target.closest(".cell");
+  if (!cellEl) return;
+  const c = cells[cellEl.dataset.idx];
+  hammer(cellEl, e); /* 어디를 탭하든 망치가 내리친다 */
+
+  if (!c.up || c.dead){
+    if (combo > 0){ combo = 0; sfx.miss(); updateHUD(); }
+    return;
+  }
+
+  switch (c.type){
+    case "bomb": hitBomb(c, e); break;
+    case "helmet": hitHelmet(c, e); break;
+    case "boss": hitBoss(c, e); break;
+    case "gold": scoreHit(c, e, 50, true); sfx.gold(); break;
+    default: scoreHit(c, e, 10, false); sfx.hit(); break;
+  }
+  updateHUD();
+});
+
+function scoreHit(c, e, base, isGold){
+  c.dead = true;
+  combo++; hits++;
+  maxCombo = Math.max(maxCombo, combo);
+  const gained = base * multiplier() * (fever ? 2 : 1);
+  score += gained;
+  c.el.classList.add("hit");
+  popCombo();
+  buzz(isGold ? 45 : 28);
+  floatScore(c.el, "+" + gained, isGold || multiplier() > 1 || fever);
+  stars(c.el, e, isGold ? 8 : 5);
+  ring(c.el, e, isGold ? "gold" : "");
+  impact(c.el, e, isGold ? "✨" : "💥");
+  bounce(c.el);
+  if (isGold) confetti(c.el, e, 10);
+  clearTimeout(c.hideTimer);
+  setTimeout(() => hide(c, false), 240);
+  checkPraise();
+  if (combo > 0 && combo % 10 === 0 && !fever) startFever();
+}
+
+function hitBomb(c, e){
+  c.dead = true;
+  sfx.boom(); buzz([90, 40, 90]);
+  board.classList.add("shake");
+  setTimeout(() => board.classList.remove("shake"), 360);
+  c.el.classList.add("hit");
+  impact(c.el, e, "💥");
+  ring(c.el, e, "");
+  clearTimeout(c.hideTimer);
+  setTimeout(() => hide(c, false), 240);
+  combo = 0;
+  if (mode === "survival"){ loseLife(); floatScore(c.el, "💥", false, true); }
+  else { score = Math.max(0, score - 30); floatScore(c.el, "-30", false, true); }
+}
+
+function hitHelmet(c, e){
+  c.hp--;
+  if (c.hp > 0){
+    sfx.clang(); buzz(20);
+    c.el.classList.add("nohelm");
+    floatScore(c.el, "⛑️!", false);
+    ring(c.el, e, "");
+    impact(c.el, e, "⚡");
+    bounce(c.el);
+    /* 헬멧이 벗겨지면 잠깐 더 버틴다 */
+    clearTimeout(c.hideTimer);
+    c.hideTimer = setTimeout(() => hide(c, true), 700);
+  } else {
+    scoreHit(c, e, 30, false);
+    sfx.hit();
+  }
+}
+
+function hitBoss(c, e){
+  c.hp--;
+  c.pips.forEach((p, i) => p.classList.toggle("off", i >= c.hp));
+  if (c.hp > 0){
+    combo++; hits++;
+    maxCombo = Math.max(maxCombo, combo);
+    const gained = 10 * multiplier() * (fever ? 2 : 1);
+    score += gained;
+    sfx.bossHit(); buzz(35);
+    popCombo();
+    floatScore(c.el, "+" + gained, false);
+    stars(c.el, e, 4);
+    ring(c.el, e, "boss");
+    impact(c.el, e, "⚡");
+    bounce(c.el);
+    checkPraise();
+    if (combo % 10 === 0 && !fever) startFever();
+  } else {
+    scoreHit(c, e, 100, true);
+    confetti(c.el, e, 18); /* 보스 처치는 컨페티 대폭발 */
+    sfx.bossDown(); buzz([50,30,50,30,120]);
+    bossKilled();
+  }
+}
+
+function bossKilled(){
+  if (mode === "survival") nextBossAt = hits + 30;
+}
+
+function popCombo(){
+  comboVal.classList.remove("pop"); void comboVal.offsetWidth;
+  comboVal.classList.add("pop");
+}
+
+function floatScore(cellEl, text, gold, bad){
+  const s = document.createElement("div");
+  s.className = "float-score" + (gold ? " gold" : "") + (bad ? " bad" : "");
+  s.textContent = text;
+  cellEl.appendChild(s);
+  setTimeout(() => s.remove(), 750);
+}
+
+function stars(cellEl, e, n){
+  const rect = cellEl.getBoundingClientRect();
+  const x = e.clientX - rect.left, y = e.clientY - rect.top;
+  for (let i = 0; i < n; i++){
+    const st = document.createElement("span");
+    st.className = "star"; st.textContent = "✦";
+    const ang = Math.random()*Math.PI*2, dist = 24 + Math.random()*26;
+    st.style.left = x + "px"; st.style.top = y + "px";
+    st.style.color = i % 2 ? "var(--gold)" : "#fff";
+    st.style.setProperty("--dx", Math.cos(ang)*dist + "px");
+    st.style.setProperty("--dy", Math.sin(ang)*dist + "px");
+    cellEl.appendChild(st);
+    setTimeout(() => st.remove(), 520);
+  }
+}
+
+/* 탭 지점 좌표 계산 */
+function tapPos(cellEl, e){
+  const rect = cellEl.getBoundingClientRect();
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+/* 충격파 링 */
+function ring(cellEl, e, variant){
+  const { x, y } = tapPos(cellEl, e);
+  const r = document.createElement("div");
+  r.className = "ring" + (variant ? " " + variant : "");
+  r.style.left = x + "px"; r.style.top = y + "px";
+  cellEl.appendChild(r);
+  setTimeout(() => r.remove(), 400);
+}
+
+/* 임팩트 이모지 팝 (💥 ✨ ⚡ 등) */
+function impact(cellEl, e, emoji){
+  const { x, y } = tapPos(cellEl, e);
+  const im = document.createElement("div");
+  im.className = "impact";
+  im.textContent = emoji;
+  im.style.left = x + "px"; im.style.top = y + "px";
+  cellEl.appendChild(im);
+  setTimeout(() => im.remove(), 360);
+}
+
+/* 컨페티 (황금·보스 처치용) */
+const CONF_COLORS = ["#FFC93C","#FF8A3D","#5CBF4F","#6BB8F0","#F26D9B","#9B6BD4"];
+function confetti(cellEl, e, n){
+  const { x, y } = tapPos(cellEl, e);
+  for (let i = 0; i < n; i++){
+    const p = document.createElement("span");
+    p.className = "confetti";
+    p.style.left = x + "px"; p.style.top = y + "px";
+    p.style.background = CONF_COLORS[i % CONF_COLORS.length];
+    const ang = Math.random()*Math.PI*2, dist = 34 + Math.random()*44;
+    p.style.setProperty("--dx", Math.cos(ang)*dist + "px");
+    p.style.setProperty("--dy", (Math.sin(ang)*dist + 30) + "px"); /* 살짝 아래로 떨어지는 느낌 */
+    p.style.setProperty("--rot", (Math.random()*540 - 270) + "deg");
+    cellEl.appendChild(p);
+    setTimeout(() => p.remove(), 680);
+  }
+}
+
+/* 셀 바운스 */
+function bounce(cellEl){
+  cellEl.classList.remove("bounce"); void cellEl.offsetWidth;
+  cellEl.classList.add("bounce");
+  setTimeout(() => cellEl.classList.remove("bounce"), 240);
+}
+
+/* 탭 지점에 내리치는 뿅망치 */
+function hammer(cellEl, e){
+  const { x, y } = tapPos(cellEl, e);
+  const h = document.createElement("div");
+  h.className = "hammer";
+  h.innerHTML = HAMMER_SVG;
+  h.style.left = x + "px"; h.style.top = y + "px";
+  cellEl.appendChild(h);
+  setTimeout(() => h.remove(), 290);
+}
+
+/* 콤보 칭찬 텍스트 — 5콤보 단위 (10단위는 피버 배너가 담당) */
+const PRAISES = ["GOOD!", "GREAT!", "AMAZING!", "INCREDIBLE!"];
+function checkPraise(){
+  if (combo < 5 || combo % 5 !== 0 || combo % 10 === 0) return;
+  const tier = Math.min(PRAISES.length - 1, Math.floor(combo / 10));
+  const p = document.createElement("div");
+  p.className = "praise";
+  p.textContent = PRAISES[tier];
+  document.querySelector(".board-wrap").appendChild(p);
+  setTimeout(() => p.remove(), 820);
+}
+
+/* ── Flow ─────────────────────────── */
+function start(){
+  playing = true;
+  score = 0; combo = 0; maxCombo = 0; hits = 0;
+  lives = MAX_LIVES; fever = false; bossSpawned = false;
+  nextBossAt = 30; survStart = Date.now();
+  document.body.classList.remove("fever");
+  overlay.hidden = true;
+  startBtn.disabled = true; startBtn.style.opacity = .5;
+  timebar.classList.remove("hurry");
+  timebar.style.width = "100%";
+  renderLives(); updateHUD();
+  requestWakeLock();
+  sfx.start(); buzz([30,30,30,30,60]);
+  startGameBgm();
+  spawnLoop();
+
+  if (mode === "classic"){
+    timeLeft = GAME_SEC;
+    tickTimer = setInterval(() => {
+      timeLeft--;
+      timebar.style.width = (timeLeft/GAME_SEC*100) + "%";
+      if (timeLeft === 15 && !bossSpawned){ bossSpawned = true; spawnBoss(); }
+      if (timeLeft <= 5 && timeLeft > 0){ timebar.classList.add("hurry"); sfx.tick(); }
+      if (timeLeft <= 0) end();
+    }, 1000);
+  } else {
+    /* 서바이벌: 보스는 명중 수 기준으로 주기 등장 */
+    tickTimer = setInterval(() => {
+      if (hits >= nextBossAt && !cells.some(c => c.up && c.type === "boss")){
+        nextBossAt = hits + 30;
+        spawnBoss();
+      }
+    }, 500);
+  }
+}
+
+function end(){
+  playing = false;
+  clearInterval(tickTimer); clearTimeout(spawnTimer); clearTimeout(feverTimer);
+  stopFeverBgm(); stopGameBgm();
+  fever = false; document.body.classList.remove("fever");
+  cells.forEach(c => { c.dead = true; hide(c, false); });
+  startBtn.disabled = false; startBtn.style.opacity = 1;
+  releaseWakeLock();
+
+  const prev = getBest();
+  const isRecord = score > prev;
+  if (isRecord) localStorage.setItem(bestKey(), score);
+  finalScore.textContent = score;
+  finalBest.textContent = Math.max(prev, score);
+  recordBadge.hidden = !isRecord;
+  modeline.textContent = `${t(mode)} · ${t(diff)}`;
+  statHits.textContent = hits;
+  statCombo.textContent = maxCombo;
+  updateHUD();
+  sfx.end(); buzz([60,40,60]);
+  overlay.hidden = false;
+}
+
+/* ── Wake Lock ────────────────────── */
+let wakeLock = null;
+async function requestWakeLock(){
+  try{ if ("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+function releaseWakeLock(){ try{ wakeLock && wakeLock.release(); wakeLock = null; }catch(e){} }
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && playing) requestWakeLock();
+});
+
+/* ── UI wiring ────────────────────── */
+startBtn.addEventListener("click", start);
+retryBtn.addEventListener("click", () => { overlay.hidden = true; }); /* 메인으로 복귀 → 모드/난이도 선택 후 시작 */
+
+/* ── 자랑하기 (공유) ─────────────── */
+const shareBtn = $("shareBtn");
+shareBtn.addEventListener("click", async () => {
+  const text = t("shareMsg")
+    .replace("{mode}", t(mode))
+    .replace("{diff}", t(diff))
+    .replace("{score}", finalScore.textContent);
+  const url = location.href.split("#")[0].split("?")[0];
+
+  if (navigator.share){
+    try{ await navigator.share({ title: t("title"), text, url }); }catch(e){ /* 사용자가 취소한 경우 */ }
+  } else {
+    try{
+      await navigator.clipboard.writeText(text + "\n" + url);
+      shareFeedback();
+    }catch(e){
+      /* 클립보드 API도 막힌 환경: 임시 textarea 폴백 */
+      const ta = document.createElement("textarea");
+      ta.value = text + "\n" + url;
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand("copy"); shareFeedback(); }catch(err){}
+      ta.remove();
+    }
+  }
+});
+function shareFeedback(){
+  const span = shareBtn.querySelector("span");
+  const orig = t("share");
+  span.textContent = t("copied");
+  setTimeout(() => { span.textContent = orig; }, 1600);
+}
+
+function bindSeg(selector, get, set){
+  document.querySelectorAll(selector).forEach(btn => {
+    const val = btn.dataset.mode || btn.dataset.diff;
+    btn.setAttribute("aria-pressed", val === get());
+    btn.addEventListener("click", () => {
+      if (playing) return;
+      set(val);
+      document.querySelectorAll(selector).forEach(b =>
+        b.setAttribute("aria-pressed", (b.dataset.mode || b.dataset.diff) === get()));
+      updateHUD();
+    });
+  });
+}
+bindSeg(".seg-btn.mode", () => mode, v => {
+  mode = v;
+  localStorage.setItem("mole.mode", v);
+  document.body.className = "mode-" + v;
+  renderLives();
+});
+bindSeg(".seg-btn.diff", () => diff, v => {
+  diff = v;
+  localStorage.setItem("mole.diff", v);
+});
+
+langBtn.addEventListener("click", () => {
+  lang = lang === "ko" ? "en" : "ko";
+  localStorage.setItem("mole.lang", lang);
+  applyLang();
+});
+
+function renderSoundBtn(){ soundBtn.textContent = soundOn ? "🔊" : "🔇"; }
+soundBtn.addEventListener("click", () => {
+  soundOn = !soundOn;
+  localStorage.setItem("mole.sound", soundOn ? "1" : "0");
+  renderSoundBtn();
+});
+
+document.body.className = "mode-" + mode;
+applyLang(); renderSoundBtn(); renderLives(); updateHUD();
+})();
+</script>
+<script src="/consent.js" defer></script>
+</body>
+</html>

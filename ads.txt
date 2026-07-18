@@ -1,0 +1,4 @@
+# ads.txt - mole.dobal-e.com
+# AdSense 가입 승인 후 아래 줄의 pub-0000000000000000 을
+# 본인의 게시자 ID (AdSense > 계정 > 계정 정보) 로 교체한 뒤 주석(#)을 제거하세요.
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

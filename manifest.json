@@ -1,0 +1,17 @@
+{
+  "name": "두더지팡팡 · Whack-a-Mole",
+  "short_name": "두더지팡팡",
+  "description": "황금·폭탄·보스 두더지와 피버 타임! 무료 두더지 잡기 게임",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#AEE3F6",
+  "theme_color": "#8ED04E",
+  "lang": "ko",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

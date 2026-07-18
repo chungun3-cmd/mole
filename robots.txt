@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mole.dobal-e.com/sitemap.xml
